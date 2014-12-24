@@ -43,6 +43,10 @@ db.runCommand({"collMod": "demo.date", "expireAfterSecs": 43200})
 - 和普通索引不同, 多键文本索引中键的顺序并不重要, 可以使用权重来控制字段的相对重要性.
 - 文本索引除了英语外还有限支持常见的印欧语系语言.
 - 养成为索引修改名称的习惯, 便于管理也有效避免索引名长度超过限制.
+- 文本索引默认就是稀疏的, 所以当一个文档缺少索引键或值为 `null` 的时候, 它不会被索引.
+
+以及当使用 `$text` 操作符进行查询时, 也有一些额外限制,具体参考
+[文档](http://docs.mongodb.org/manual/reference/operator/query/text/#op._S_text)
 
 ```js
 // set the language to spanish
@@ -57,7 +61,10 @@ db.demo.ensureIndex({"title": "text", "content": "text"},
 // set weights to "$**"
 db.demo.ensureIndex({"whatever": "text"},
 {"weights": {"title": 1, "$**": 2, "content": 3}})
-
+// use $text && $search operator
+db.demo.find({"$text": {"$search": "DEMO", "$language": "english"}})
+db.demo.find({"title": "DEMO", "$text": {"$search": "DEMO"}})
+// remove index
 db.demo.dropIndex("textIndex")
 ```
 
