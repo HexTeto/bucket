@@ -136,10 +136,35 @@ GridFS 使用两个集合存储数据: `chunks` 存储拆分后的数据块, `fi
 }
 ```
 
-[Python API Document](http://api.mongodb.org/python/current/?_ga=1.54400232.1358447357.1418023365)
-
 #### When should I use GridFS?
 
  - If your filesystem limits the number of files in a directory, you can use GridFS to store as many files as needed.
  - When you want to keep your files and metadata automatically synced and deployed across a number of systems and facilities. When using geographically distributed replica sets MongoDB can distribute files and their metadata automatically to a number of mongod instances and facilities.
  - When you want to access information from portions of large files without having to load whole files into memory, you can use GridFS to recall sections of files without reading the entire file into memory.
+
+#### mongofiles
+
+`mongofiles` 工具提供了命令行接口与 GridFS 进行交互.
+[完整参考手册](http://docs.mongodb.org/manual/reference/program/mongofiles/)
+
+#### GridFS APIs
+
+以 [Python Driver](http://api.mongodb.org/python/current/api/gridfs/index.html?highlight=gridfs#module-gridfs) 为例.
+
+```py
+from pymongo import MongoClient
+import gridfs
+
+db = MongoClient().test
+fs = gridfs.GridFS(db)
+
+file_id = fs.put('Hello, World', filename='hello.txt')
+fs_list = fs.list()
+
+content = fs.get(file_id).read()
+
+print fs_list
+# [u'hello.txt']
+print content
+# 'Hello, World'
+```
