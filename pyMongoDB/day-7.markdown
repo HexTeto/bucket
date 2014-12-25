@@ -64,6 +64,8 @@ db.demo.ensureIndex({"whatever": "text"},
 // use $text && $search operator
 db.demo.find({"$text": {"$search": "DEMO", "$language": "english"}})
 db.demo.find({"title": "DEMO", "$text": {"$search": "DEMO"}})
+// optimize query
+db.demo.ensureIndex({"title": 1, "content": "text"}, {"name": "optIndex"})
 // remove index
 db.demo.dropIndex("textIndex")
 ```
@@ -108,7 +110,13 @@ db.cap_col.find().sort({'$natural': -1})
 不过由于普通集合并不维护文档的插入顺序, 故而循环指针只能用于固定集合.
 
 ```py
-db.foo.find(tailable=True)
+import pymongo
+
+client = pymongo.MongoClient()
+db = client['test']
+coll = db['demo']
+cursor = coll.find(tailable=True)
+# cursor = coll.find({}, {"tailable": True})
 ```
 
 - 默认情况下, 如果超过 10 分钟没有新的文档插入循环指针就会被关闭.
@@ -118,3 +126,84 @@ db.foo.find(tailable=True)
 - 当不存在匹配查询的文档时, 或将指向的文档恰好被删除时都会导致循环指针失效或死亡.
 - 不要在已被索引的字段上使用循环指针, 而使用 `{indexedField: {$gt: <lastValue>}}`
 来达到类似的效果.
+
+#### Geospatial Index
+
+- Spherical : 使用 `2dsphere index` 索引球形表面类型的坐标数据
+- Flat : 使用 `2d index` 索引平面坐标数据.
+
+`2dsphere index` 使用 [GeoJSON](http://geojson.org/) 格式,
+支持以下对象:
+- Point
+- LineString
+- Polygon
+- MultiPoint
+- MultiLineString
+- MultiPolygon
+- GeometryCollection
+
+```json
+{
+    "name": "New York City",
+    "loc": {
+        "type": "Point",
+        "coordinates": [50, 2]
+    }
+}
+
+
+{
+    "name": "Hudson River",
+    "loc": {
+        "type": "LineString",
+        "coordinates": [[0, 0], [5, 5]]
+    }
+}
+
+
+{
+    "name": "England",
+    "loc": {
+        "type": "Polygon",
+        "coordinates": [[0,0], [3, 3], [6, 0], [0, 0]]
+    }
+}
+```
+
+可以看到多边形和线类似也是用一个坐标数组来表示, 区别是 `type`;
+`loc` 这个字段可以任意指定, 但是其中的子对象是由 GeoJSON 指定的, 不可以随意更改.
+
+建立一个地理空间索引和其它索引同样, 索引字段的值为 `2dsphere` 或 `2d` 即可.
+并且同样支持复合索引.
+
+```js
+db.map.ensureIndex({"loc": "2dsphere"})
+db.map.ensureIndex({"loc": "2dsphere", "name": 1})
+// compound geospatial index dose not require the field order
+db.map.ensureIndex({"name": -1, "loc": "2dsphere"})
+```
+
+对于地理空间的查询, MongoDB 支持查找交集 (intersection), 包含 (within)
+以及接近 (nearness).
+查询时需要将查找的内容用 `{$geometry: geojson_object}` 转换为 GeoJSON 对象.
+
+```js
+gtw = {
+    "type": "Polygon",
+    "coordinates": [[0, 0], [0, 1], [1, 2]]
+}
+// intersection
+db.map.find({"loc": {"$geoIntersects": {"$geometry": gtw}}})
+// within
+db.map.find({"loc": {"$geoWithin": {"$geometry": gtw}}})
+// nearness
+db.map.find({"loc": {"$near": {"$geometry": gtw}}})
+// for more information
+db.map.runCommand({"geoNear": "demo", "near": gtw, spherical: true})
+```
+
+需要注意
+- `$near` 会对结果进行 "由近到远" 的排序.
+- `2d index` 只对点进行索引,
+即点集不会被视为线. 在 `$getWithin` 的查询时注意与 `2dsphere index` 的区别.
+- `$geoWithin` 和 `$getIntersects` 都不一定需要地理空间索引, 但是使用索引可以明显提高效率.
