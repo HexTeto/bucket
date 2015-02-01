@@ -366,3 +366,8 @@ db.adminCommand({"flushRouterConfig": 1})
 ```sh
 mongodump --db config --port $config_server_port --out $output_file
 ```
+
+随着集群规模不断扩大, 修复 jumbo chunk 的复杂程度越来越高, 因此应设法尽可能避免产生 jumbo chunk.
+根据前边的分析, 我们知道比较常见的导致巨大块出现的原因是 shard key 选择不合理.
+在设计 shard key 时, 应尽可能细化粒度, 最优情况是保证每个文档在该字段上都拥有唯一值,
+虽然很多情况下不能满足最优情况, 但也至少应该保证 shard key 字段的某个值所包括的数据不要超过 `chunksize` 限制.
