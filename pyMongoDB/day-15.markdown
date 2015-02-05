@@ -5,6 +5,10 @@
 
 [curop]:http://docs.mongodb.org/manual/reference/method/db.currentOp/#db.currentOp
 [slowms]:http://docs.mongodb.org/manual/tutorial/manage-the-database-profiler/#database-profiling-specify-slowms-threshold
+[mtop]:http://docs.mongodb.org/manual/reference/program/mongotop/
+[mstat]:http://docs.mongodb.org/manual/reference/program/mongostat/
+[msniff]:http://docs.mongodb.org/manual/reference/program/mongosniff/
+[mperf]:http://docs.mongodb.org/manual/reference/program/mongoperf/
 
 ## Monitoring and Analysis
 
@@ -87,3 +91,10 @@ db.demo.stats(1024*1024)
 其中有 `fileSize` 字段反应了数据库文件在磁盘上占用的空间, 它应该总是最大的.
 之后便是 `storageSize`, 它和 `fileSize` 的差值部分一般是那些被 `0` 填充的预留空间.
 此外该方法同样可以接受比例因数来控制单位.
+
+#### mongotop && mongostat
+
+- [`mongotop`][mtop] 可以返回 MongoDB 执行读写操作消耗的时间, 统计数据可以精确到每个集合.
+- [`mongostat`][mstat] 会输出自上次调用之后的实例状态统计信息, 包括操作次数, 内存以及网络的使用情况等.
+- [`mongosniff`][msniff] 会实时反应当前数据库活动状态的一些底层操作信息. 类似于 `tcpdump`.
+- [`mongoperf`][mperf] 是一个独立的磁盘吞吐性能检测工具.
