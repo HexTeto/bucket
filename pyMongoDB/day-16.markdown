@@ -4,6 +4,9 @@
 <br>
 
 [local]:http://docs.mongodb.org/manual/core/authentication/#localhost-exception
+[bir]:http://docs.mongodb.org/manual/reference/built-in-roles/
+[rmc]:http://docs.mongodb.org/manual/reference/command/#role-management-commands
+[users]:http://docs.mongodb.org/manual/reference/method/#user-management-methods
 
 ## Security
 
@@ -69,3 +72,19 @@ MongoDB 采用 "Role-Based Access Control (RBAC)" 来控制访问权限.
 对于一个单独的实例, 使用 `--auth` 选项很方便, 对于副本集和分片集群则需要指定一个一致的 `keyFile`.
 
 此外, 在分片中 `admin` 这个库是保存在 config server 上的, 所以应该只允许客户端访问 `mongos` 实例.
+
+#### Roles
+
+MongoDB 内置了一些 `built-in roles` 应对绝大多数常见的使用场景, 参考文档 [built-in-roles][bir].
+
+除了内置角色外, 管理员还可以针对需求创建额外的角色和权限. 且用户可以同时拥有多个角色,
+如果同时存在一个角色是从另一个角色继承而来的情况, 以更高权限为准.
+目前版本中, 对于角色权限的控制, 可以细化到集合级别和命令级别.
+
+MongoDB 会将角色定义保存在 `admin.system.roles` 集合中, 通常情况下更改角色定义不应直接访问该集合,
+而是使用角色管理的一系列命令, 参考 [Role Management Commands][rmc].
+
+#### Users
+
+MongoDB 将用户凭证保存在 `admin.system.users` 集合中. 同样使用上文用到的诸如 `db.createUser()`
+这样的用户管理方法来实现对用户的操作, 该系列方法参考 [user management][users].

@@ -3,7 +3,7 @@
 <br>
 <br>
 
-该条目施工中, 参考文档: http://docs.mongodb.org/manual/administration/optimization/
+施工条目, 参考文档: http://docs.mongodb.org/manual/administration/optimization/
 
 #### Read vs. Write
 
