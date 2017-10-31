@@ -4,7 +4,7 @@
 # Ubuntu 
 ################
 # install deps
-apt install libffi-dev libssl-dev zlib1g-dev openssl-dev readline-common libreadline-dev gcc g++ make
+apt install libffi-dev libssl-dev zlib1g-dev openssl readline-common libreadline-dev gcc g++ make
 
 # install python
 wget https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz
